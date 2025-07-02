@@ -4,6 +4,22 @@ const TELEGRAM_CHAT_ID = 'Your_Chat_ID';
 const LAST_UPDATE_ID_PROP_KEY = 'LAST_TELEGRAM_UPDATE_ID'; //do not change
 
 /**
+ * Escape Telegram HTML special chars but allow <b> and <i> tags
+ */
+function escapeTelegramHTML(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    // Re-allow <b> and </b> tags
+    .replace(/&lt;b&gt;/g, "<b>")
+    .replace(/&lt;\/b&gt;/g, "</b>")
+    // Re-allow <i> and </i> tags if you want (optional)
+    .replace(/&lt;i&gt;/g, "<i>")
+    .replace(/&lt;\/i&gt;/g, "</i>");
+}
+
+/**
  * Forward unread Gmail Primary emails (with attachments) to Telegram.
  */
 function forwardEmailToTelegram() {
@@ -33,7 +49,10 @@ function forwardEmailToTelegram() {
         `⏰ <b>Time:</b> ${messageDate}\n\n` +
         `📝 <b>Snippet:</b>\n${bodySnippet}`;
 
-      sendTelegramMessage(telegramMessage);
+      // Escape message for Telegram HTML except <b> and <i> tags
+      const safeTelegramMessage = escapeTelegramHTML(telegramMessage);
+
+      sendTelegramMessage(safeTelegramMessage);
 
       const attachments = lastMessage.getAttachments();
       attachments.forEach(att => {
